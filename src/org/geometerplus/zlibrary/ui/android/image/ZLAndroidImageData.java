@@ -54,13 +54,21 @@ public final class ZLAndroidImageData implements ZLImageData {
 					myRealHeight = options.outHeight;
 				}
 				options.inJustDecodeBounds = false;
-				int coefficient = 1;
-				while ((myRealHeight > maxHeight * coefficient) ||
-					   (myRealWidth > maxWidth *coefficient)) {
-					coefficient *= 2;
+				options.inScaled = true;
+				float scaleCoeff = Math.min(((float)maxWidth) / ((float)myRealWidth),
+						((float)maxHeight) / ((float)myRealHeight));
+				int scaledWidth = myRealWidth;
+				int scaledHeight = myRealHeight;
+				if (scaleCoeff < 1.0)
+				{
+					scaledWidth =  (int)(Math.round(scaleCoeff * ((float)myRealWidth)));
+					scaledHeight =  (int)(Math.round(scaleCoeff * ((float)myRealHeight)));
 				}
-				options.inSampleSize = coefficient;
-				myBitmap = BitmapFactory.decodeByteArray(myArray, 0, myArray.length, options);
+				// image will be prescaled while decoding to save memory
+				options.inSampleSize = (int)(1.0f / scaleCoeff);
+				myBitmap = Bitmap.createScaledBitmap(
+						BitmapFactory.decodeByteArray(myArray, 0, myArray.length, options),
+						scaledWidth, scaledHeight, true);
 				if (myBitmap != null) {
 					myLastRequestedWidth = maxWidth;
 					myLastRequestedHeight = maxHeight;
