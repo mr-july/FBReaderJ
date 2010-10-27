@@ -26,6 +26,24 @@ import org.geometerplus.zlibrary.core.image.ZLBase64EncodedImage;
 import org.geometerplus.fbreader.Paths;
 
 final class Base64EncodedImage extends ZLBase64EncodedImage {
+	private final String BASE64_FILE_EXTENSION = "b64";
+	
+	/**
+	 *  format for base64 encoded file name construction
+	 *  1-st param - directory
+	 *  2-nd param - number
+	 *  3-d param - file extension
+	 */
+	private final String FORMAT_ENCODED = "%s/image_%03x.%s";
+	
+	/**
+	 *  format for decoded file name construction
+	 *  1-st param - directory
+	 *  2-nd param - number
+	 *  3-d param - file extension
+	 */
+	private final String FORMAT_DECODED = "%s/dimage_%03x.%s";
+	
 	private static int ourCounter;
 
 	static void resetCounter() {
@@ -43,19 +61,19 @@ final class Base64EncodedImage extends ZLBase64EncodedImage {
 		new File(myDirName).mkdirs();
 		myFileNumber = ourCounter++;
 		try {
-			myStreamWriter = new OutputStreamWriter(new FileOutputStream(myDirName + "/image" + myFileNumber), "UTF-8");
+			myStreamWriter = new OutputStreamWriter(new FileOutputStream(encodedFileName()), "UTF-8");
 		} catch (IOException e) {
 		}
 	}
 
 	@Override
 	protected String encodedFileName() {
-		return myDirName + "/image" + myFileNumber;
+		return String.format(FORMAT_ENCODED, myDirName, myFileNumber, BASE64_FILE_EXTENSION);
 	}
 
 	@Override
 	protected String decodedFileName() {
-		return myDirName + "/dimage" + myFileNumber;
+		return String.format(FORMAT_DECODED, myDirName, myFileNumber, getFileExtension());
 	}
 
 	void addData(char[] data, int offset, int length) {
@@ -72,5 +90,24 @@ final class Base64EncodedImage extends ZLBase64EncodedImage {
 			myStreamWriter.close();
 		} catch (IOException e) {
 		}
+	}
+	
+	
+	private String getFileExtension() {
+		String fileExtension = "jpg";
+		
+		String tmpMime = mimeType().toLowerCase();
+		if (tmpMime.contains("png"))
+		{
+			fileExtension = "png";
+		} else if (tmpMime.contains("gif"))
+		{
+			fileExtension = "gif";
+		} else if (tmpMime.contains("bmp") || tmpMime.contains("bitmap"))
+		{
+			fileExtension = "bmp";
+		}
+		
+		return fileExtension;
 	}
 }
